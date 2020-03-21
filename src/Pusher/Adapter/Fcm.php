@@ -22,58 +22,35 @@ class Fcm implements AdapterInterface
     protected $environment;
     protected $invalidTokens = [];
 
-    /**
-     * FCM adapter constructor.
-     *
-     * @param  string  $serverKey  Server key
-     * @param  int  $environment  Production/development environment
-     */
     public function __construct(string $serverKey, int $environment = AdapterInterface::ENVIRONMENT_DEVELOPMENT)
     {
         $this->serverKey = $serverKey;
         $this->environment = $environment;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function push(DeviceCollection $devices, MessageInterface $message): void
+    public function push(DeviceCollection $devices, $message, $_data = Array())
     {
         $tokens = $devices->getTokens();
 
         $data = [
-            'data' => $message->getPayload()
+            'data' => Array("notification_data"=>$_data),
+            'notification' => $message,
+            'registration_ids' => $tokens,
         ];
 
-        if (! empty($message->getTitle())) {
-            $data['data']['title'] = $message->getTitle();
-            $data['data']['body'] = $message->getText();
-        } else {
-            $data['data']['body'] = $message->getText();
-        }
-
-        $data['registration_ids'] = $tokens;
-        $data['time_to_live'] = $message->getTTL();
-
-        switch ($message->getPriority()) {
-            case MessageInterface::PRIORITY_HIGH:
-                $data['priority'] = 'high';
-                break;
-            case MessageInterface::PRIORITY_NORMAL:
-                $data['priority'] = 'normal';
-                break;
-        }
 
         $ch = curl_init(self::API_URL);
         curl_setopt_array($ch, [
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER     => [
+            CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
-                'Authorization: key='.$this->serverKey,
+                'Authorization: key=' . $this->serverKey,
             ],
-            CURLOPT_POSTFIELDS     => json_encode($data),
+            CURLOPT_POSTFIELDS => json_encode($data),
         ]);
+
+        error_log($response);
 
         if (!$response = curl_exec($ch)) {
             throw new AdapterException('invalid response', AdapterException::INVALID_RESPONSE);
@@ -90,7 +67,7 @@ class Fcm implements AdapterInterface
         }
     }
 
-    public function getFeedback(): array
+    public function getFeedback():array
     {
         $result = $this->invalidTokens;
         $this->invalidTokens = [];

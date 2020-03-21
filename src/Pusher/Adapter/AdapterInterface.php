@@ -10,7 +10,6 @@ namespace Pusher\Adapter;
 
 
 use Pusher\Collection\DeviceCollection;
-use Pusher\Exception\AdapterException;
 use Pusher\Model\MessageInterface;
 
 interface AdapterInterface
@@ -20,18 +19,7 @@ interface AdapterInterface
 
     public function __construct(string $serverKey, int $environment = AdapterInterface::ENVIRONMENT_DEVELOPMENT);
 
-    /**
-     * Push message to devices
-     * @param  DeviceCollection  $devices
-     * @param  MessageInterface  $message
-     * @throws AdapterException
-     */
-    public function push(DeviceCollection $devices, MessageInterface $message):void;
+    public function push(DeviceCollection $devices, $message, $_data=Array());
 
-    /**
-     * Get result of pushing
-     * @return array
-     * @throws AdapterException
-     */
     public function getFeedback():array;
 }

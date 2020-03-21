@@ -18,18 +18,10 @@ class Push
     private $message;
     private $devices;
 
-    /**
-     * Push constructor.
-     *
-     * @param \Pusher\Adapter\AdapterInterface $adapter APNS/GCM/FCM adapter
-     * @param \Pusher\Collection\DeviceCollection $devices Target devices
-     * @param \Pusher\Model\MessageInterface $message Message
-     */
-    public function __construct(AdapterInterface $adapter, DeviceCollection $devices, MessageInterface $message)
+    public function __construct(AdapterInterface $adapter, DeviceCollection $devices)
     {
         $this->adapter = $adapter;
         $this->devices = $devices;
-        $this->message = $message;
     }
 
     public function getAdapter():AdapterInterface
@@ -46,11 +38,8 @@ class Push
     {
         return $this->message;
     }
-    
-    public function push():array
-    {
-        $this->adapter->push($this->devices, $this->message);
 
-        return $this->adapter->getFeedback();
+    public function push($message, $_data=Array()){
+        $this->adapter->push($this->devices, $message, $_data);
     }
 }
